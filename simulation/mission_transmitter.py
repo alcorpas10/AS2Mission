@@ -1,8 +1,8 @@
 from as2_python_api.mission_interpreter.mission import Mission, MissionItem
 from as2_msgs.msg import YawMode
 
-from std_msgs.msg import String
-from mutac_msgs.msg import Plan
+from std_msgs.msg import String, Int32
+from mutac_msgs.msg import Plan, State
 
 from rclpy import qos
 import rclpy.executors
@@ -15,7 +15,7 @@ import sys
 import threading
 from time import sleep
 
-from typing import List
+from typing import List, Dict
 
 class MissionTransmitter(Node):
     def __init__(self, n_drones, namespace):
@@ -25,13 +25,17 @@ class MissionTransmitter(Node):
         self.n_drones = n_drones
         self.namespace = namespace
 
-        self.mission_pubs : List[Publisher] = list()
+        self.drones_available = list(i for i in range(n_drones))
 
+        self.mission_pubs : Dict[int, Publisher] = {}
+
+        self.land_sub = self.create_subscription(Int32, "/emergency_land", self.land_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
         self.plan_sub = self.create_subscription(Plan, "/mutac/planned_paths", self.path_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
+        self.events_sub = self.create_subscription(State, "/mutac/drone_events", self.event_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
 
         for i in range(self.n_drones):
             mission_pub_name = str("/" + self.namespace + str(i) + "/mission")
-            self.mission_pubs.append(self.create_publisher(String, mission_pub_name, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10)))
+            self.mission_pubs[i] = self.create_publisher(String, mission_pub_name, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
         
         self.__executor = rclpy.executors.SingleThreadedExecutor()
         self.__executor.add_node(self)
@@ -39,7 +43,27 @@ class MissionTransmitter(Node):
         self.t_spin_node = threading.Thread(target=self.spin_node)
         self.t_spin_node.start()
 
-    #TODO HACER EL HOVER EN EL DRONE EVENTS CALLBACK
+    def land_callback(self, msg : Int32):
+        print('LAND')
+        target = self.namespace + str(msg.data)
+        mission = Mission(target=target, verbose=False)
+        mission.plan.append(MissionItem(behavior='land', args={
+            'speed': 0.5,
+            'wait': True
+        }))
+        json_msg = mission.json()
+        self.mission_pubs[msg.data].publish(String(data=json_msg))
+
+    def event_callback(self, msg : State):
+        print('DRONE LOST')
+        drone_lost = int(msg.identifier.natural)
+        self.drones_available.remove(drone_lost)
+        if msg.state == State.LOST:
+            for d in self.drones_available:
+                target = self.namespace + str(d)
+                mission = Mission(target=target, verbose=False)
+                json_msg = mission.json()
+                self.mission_pubs[d].publish(String(data=json_msg))
 
     def path_callback(self, msg : Plan):
         self.get_logger().info("Got plan")
