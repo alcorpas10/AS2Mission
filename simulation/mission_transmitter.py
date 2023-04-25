@@ -47,8 +47,10 @@ class MissionTransmitter(Node):
         print('LAND')
         target = self.namespace + str(msg.data)
         mission = Mission(target=target, verbose=False)
-        mission.plan.append(MissionItem(behavior='land', args={
+        mission.plan.append(MissionItem(behavior='go_to', args={
+            '_x': 0.0, '_y': 0.0, '_z': 1.0,
             'speed': 0.5,
+            'yaw_mode': YawMode.FIXED_YAW, 'yaw_angle': 0.00,
             'wait': True
         }))
         json_msg = mission.json()
@@ -57,13 +59,44 @@ class MissionTransmitter(Node):
     def event_callback(self, msg : State):
         print('DRONE LOST')
         drone_lost = int(msg.identifier.natural)
-        self.drones_available.remove(drone_lost)
         if msg.state == State.LOST:
-            for d in self.drones_available:
-                target = self.namespace + str(d)
+            self.drones_available.remove(drone_lost)
+            if msg.type == State.LAND:
+                target = self.namespace + str(drone_lost)
                 mission = Mission(target=target, verbose=False)
+                mission.plan.append(MissionItem(behavior='land', args={
+                    'speed': 0.5,
+                    'wait': True
+                }))
                 json_msg = mission.json()
-                self.mission_pubs[d].publish(String(data=json_msg))
+                self.mission_pubs[drone_lost].publish(String(data=json_msg))
+                for d in self.drones_available:
+                    target = self.namespace + str(d)
+                    mission = Mission(target=target, verbose=False)
+                    json_msg = mission.json()
+                    self.mission_pubs[d].publish(String(data=json_msg))
+            if msg.type == State.HOMEBASE:
+                target = self.namespace + str(drone_lost)
+                mission = Mission(target=target, verbose=False)
+                mission.plan.append(MissionItem(behavior='go_to', args={
+                    '_x': msg.position.x, '_y': msg.position.y, '_z': msg.position.z,
+                    'speed': 0.5,
+                    'yaw_mode': YawMode.FIXED_YAW, 'yaw_angle': 0.00,
+                    'wait': True
+                }))
+                json_msg = mission.json()
+                self.mission_pubs[drone_lost].publish(String(data=json_msg))
+                for d in self.drones_available:
+                    target = self.namespace + str(d)
+                    mission = Mission(target=target, verbose=False)
+                    json_msg = mission.json()
+                    self.mission_pubs[d].publish(String(data=json_msg))
+        if msg.state == State.RECOVERED:
+            self.drones_available.append(drone_lost)
+        
+
+
+
 
     def path_callback(self, msg : Plan):
         self.get_logger().info("Got plan")
