@@ -48,13 +48,17 @@ class Drone():
     def imuCallback(self, msg):
         angular_vel = msg.angular_velocity
         linear_acc = msg.linear_acceleration
-        if abs(angular_vel.x) > 1 or abs(angular_vel.y) > 1.5 or abs(angular_vel.z) > 0.25:
+        if angular_vel.x > 2 or angular_vel.y > 3.5 or angular_vel.z > 0.25:
+            print("Angular max: "+str(angular_vel))
             self.imu_err_count += 1
-        if abs(angular_vel.x) < -1 or abs(angular_vel.y) < -1.5 or abs(angular_vel.z) < -0.25:
+        if angular_vel.x < -2 or angular_vel.y < -3.5 or angular_vel.z < -0.25:
+            print("Angular min: "+str(angular_vel))
             self.imu_err_count += 1
-        if abs(linear_acc.x) > 1.5 or abs(linear_acc.y) > 1.5 or abs(linear_acc.z) > 15.0:
+        if linear_acc.x > 1 or linear_acc.y > 1 or linear_acc.z > 15.0:
+            print("Linear max: "+str(linear_acc))
             self.imu_err_count += 1
-        if abs(linear_acc.x) < -1 or abs(linear_acc.y) < -1 or abs(linear_acc.z) < 6.0:
+        if linear_acc.x < -1 or linear_acc.y < -2 or linear_acc.z < 6.0:
+            print("Linear min: "+str(linear_acc))
             self.imu_err_count += 1
 
     def reset(self):
