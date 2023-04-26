@@ -84,6 +84,10 @@ class MissionTransmitter(Node):
                     'yaw_mode': YawMode.FIXED_YAW, 'yaw_angle': 0.00,
                     'wait': True
                 }))
+                mission.plan.append(MissionItem(behavior='land', args={
+                    'speed': 0.5,
+                    'wait': True
+                }))
                 json_msg = mission.json()
                 self.mission_pubs[drone_lost].publish(String(data=json_msg))
                 for d in self.drones_available:
