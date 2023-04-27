@@ -43,7 +43,7 @@ class MonitorData:
         """Saves the waypoints of the path that the drone is going to follow 
         starting from the second point. The first one is the current position
         of the drone"""
-        self.state = State.ON_MISSION
+        self.state = State.ON_MISSION # TODO change to make this work with the transmission
         self.waypoints = []
         for l_point in path.points[1:]:
             label = l_point.label.natural

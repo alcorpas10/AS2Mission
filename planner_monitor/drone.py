@@ -3,6 +3,8 @@ import time
 
 from monitor.monitor_data import MonitorData, State
 
+from as2_python_api.mission_interpreter.mission import Mission
+
 
 class Drone(MonitorData):
     def __init__(self, id, homebase):
@@ -40,17 +42,12 @@ class Drone(MonitorData):
             self.repeat = False
             # TODO check what happens when the alarm is activated several times in a row
             return 5
-
-        # When the drone is in the last waypoint
+        
+        # When the drone is in the last waypoint (homebase)
         if len(wps) == 1 and waypoint_dist <= dist_wp:
             self.advanceWP()
-
-            if self.state == State.GOING_HOME:
-                self.state = State.LANDED
-                return 2
-            else:
-                self.state = State.GOING_HOME
-                return 0
+            self.state = State.GOING_HOME
+            return 0
 
         # When the drone is in a waypoint
         if waypoint_dist < dist_wp:
@@ -79,7 +76,6 @@ class Drone(MonitorData):
             self.last_distance = waypoint_dist
             self.pos_in_trj = self.position
 
-        # This point should never be reached
         return -1
     
     def distance(self, p1, p2):
@@ -112,11 +108,14 @@ class Drone(MonitorData):
     
     def setWaypoints(self, path):
         """Saves the waypoints of the path that the drone is going to follow"""
-        path_id = path.identifier.natural
-        if path_id == self.id:
-            super().setWaypoints(path)
-            self.last_wp = self.position
-            self.last_distance = float("inf")
+        self.last_wp = self.position
+        self.last_distance = float("inf")
+        self.mission = Mission.parse_raw(path)
+        path_list = []
+        for item in self.mission.plan:
+            if item.behavior == 'go_to':
+                path_list.append((item.args['_x'], item.args['_y'], item.args['_z']))
+        super().setWaypoints(path_list)
 
     def advanceWP(self):
         """Advances the drone to the next waypoint"""
