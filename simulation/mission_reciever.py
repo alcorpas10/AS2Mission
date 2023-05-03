@@ -1,7 +1,8 @@
 from as2_python_api.mission_interpreter.mission import Mission
 from as2_python_api.mission_interpreter.mission_interpreter import MissionInterpreter
 
-from std_msgs.msg import String
+# from std_msgs.msg import String
+from as2_msgs.msg import MissionUpdate
 
 from rclpy import qos
 import rclpy.executors
@@ -13,24 +14,49 @@ class MissionReciever:
     def __init__(self, drone_id, namespace):
         self.id = drone_id
         self.uav_name = namespace + str(self.id)
-        self.mission = Mission(target=self.uav_name, verbose=False)
+        # self.mission = Mission(target=self.uav_name, verbose=False)
         self.interpreter = MissionInterpreter(mission=self.mission)
         self.landed = True
 
         mission_sub_name = str("/" + self.uav_name + "/mission")
-        self.mission_sub = self.interpreter.drone.create_subscription(String, mission_sub_name, self.mission_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
+        self.mission_sub = self.interpreter.drone.create_subscription(MissionUpdate, mission_sub_name, self.mission_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
 
-    def mission_callback(self, msg : String):
-        self.interpreter.drone.get_logger().info("New mission established")
-        self.mission = Mission.parse_raw(msg.data)
-        self.start_mission()
+    def mission_callback(self, msg : MissionUpdate):
+        if msg.drone_id != self.id:
+            self.interpreter.drone.get_logger().error("Drone id is not correct")
+            exit(-1)
 
-    def start_mission(self):
-        self.interpreter.drone.get_logger().info("Start mission")
-        self.interpreter.reset(self.mission)
+        if msg.type == MissionUpdate.EXECUTE:
+            self.execute_mission(Mission.parse_raw(msg.mission))
+            self.interpreter.drone.get_logger().info("New mission established")
+
+        if msg.type == MissionUpdate.STOP:
+            self.stop_mission()
+            self.interpreter.drone.get_logger().info("Mission stopped")
+
+        if msg.type == MissionUpdate.APPEND:
+            self.append_mission(Mission.parse_raw(msg.mission))
+            self.interpreter.drone.get_logger().info("Mission appended")
+        
+        if msg.type == MissionUpdate.INSERT:
+            self.insert_mission(Mission.parse_raw(msg.mission))
+            self.interpreter.drone.get_logger().info("Mission inserted")
+
+
+    def execute_mission(self, mission : Mission):
+        self.interpreter.reset(mission)
         self.interpreter.drone.arm()
         self.interpreter.drone.offboard()
         self.interpreter.start_mission()
+
+    def stop_mission(self):
+        self.interpreter.stop_mission()
+
+    def append_mission(self, mission : Mission):
+        self.interpreter.append_mission(mission)
+
+    def insert_mission(self, mission : Mission):
+        self.interpreter.insert_mission(mission)
 
 if __name__ == '__main__':
     rclpy.init()

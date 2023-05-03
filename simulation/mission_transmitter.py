@@ -1,7 +1,8 @@
 from as2_python_api.mission_interpreter.mission import Mission, MissionItem
 from as2_msgs.msg import YawMode
 
-from std_msgs.msg import String, Int32
+from std_msgs.msg import Int32
+from as2_msgs.msg import MissionUpdate
 from mutac_msgs.msg import Plan, State
 
 from rclpy import qos
@@ -25,6 +26,8 @@ class MissionTransmitter(Node):
         self.n_drones = n_drones
         self.namespace = namespace
 
+        self.mission_id = 0
+
         self.drones_available = list(i for i in range(n_drones))
 
         self.mission_pubs : Dict[int, Publisher] = {}
@@ -35,7 +38,7 @@ class MissionTransmitter(Node):
 
         for i in range(self.n_drones):
             mission_pub_name = str("/" + self.namespace + str(i) + "/mission")
-            self.mission_pubs[i] = self.create_publisher(String, mission_pub_name, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
+            self.mission_pubs[i] = self.create_publisher(MissionUpdate, mission_pub_name, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
         
         self.__executor = rclpy.executors.SingleThreadedExecutor()
         self.__executor.add_node(self)
@@ -54,29 +57,31 @@ class MissionTransmitter(Node):
             'wait': True
         }))
         json_msg = mission.json()
-        self.mission_pubs[msg.data].publish(String(data=json_msg))
+        self.mission_pubs[msg.data].publish(MissionUpdate(drone_id=msg.data, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+        self.mission_id+=1
 
     def event_callback(self, msg : State):
         print('DRONE LOST')
-        drone_lost = int(msg.identifier.natural)
+        drone_target = int(msg.identifier.natural)
         if msg.state == State.LOST:
-            self.drones_available.remove(drone_lost)
+            self.drones_available.remove(drone_target)
             if msg.type == State.LAND:
-                target = self.namespace + str(drone_lost)
+                target = self.namespace + str(drone_target)
                 mission = Mission(target=target, verbose=False)
                 mission.plan.append(MissionItem(behavior='land', args={
                     'speed': 0.5,
                     'wait': True
                 }))
                 json_msg = mission.json()
-                self.mission_pubs[drone_lost].publish(String(data=json_msg))
+                self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
                 for d in self.drones_available:
                     target = self.namespace + str(d)
                     mission = Mission(target=target, verbose=False)
                     json_msg = mission.json()
-                    self.mission_pubs[d].publish(String(data=json_msg))
+                    self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+                self.mission_id+=1
             if msg.type == State.HOMEBASE:
-                target = self.namespace + str(drone_lost)
+                target = self.namespace + str(drone_target)
                 mission = Mission(target=target, verbose=False)
                 mission.plan.append(MissionItem(behavior='go_to', args={
                     '_x': msg.position.x, '_y': msg.position.y, '_z': msg.position.z,
@@ -89,14 +94,26 @@ class MissionTransmitter(Node):
                     'wait': True
                 }))
                 json_msg = mission.json()
-                self.mission_pubs[drone_lost].publish(String(data=json_msg))
+                self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
                 for d in self.drones_available:
                     target = self.namespace + str(d)
                     mission = Mission(target=target, verbose=False)
                     json_msg = mission.json()
-                    self.mission_pubs[d].publish(String(data=json_msg))
+                    self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+                self.mission_id+=1
+            if msg.type == State.WP_REPEATED:
+                target = self.namespace + str(drone_target)
+                mission = Mission(target=target, verbose=False)
+                mission.plan.append(MissionItem(behavior='go_to', args={
+                    '_x': msg.position.x, '_y': msg.position.y, '_z': msg.position.z,
+                    'speed': 0.5,
+                    'yaw_mode': YawMode.FIXED_YAW, 'yaw_angle': 0.00,
+                    'wait': True
+                }))
+                json_msg = mission.json()
+                self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.INSERT, mission=json_msg))
         if msg.state == State.RECOVERED:
-            self.drones_available.append(drone_lost)
+            self.drones_available.append(drone_target)
         
 
 
@@ -108,8 +125,6 @@ class MissionTransmitter(Node):
         for d in range(n_drones):
             target = self.namespace + str(d)
             missions.append(Mission(target=target, verbose=False))
-            # json_msg = missions[d].json()
-            # self.mission_pubs[d].publish(String(data=json_msg))
             missions[d].plan.append(MissionItem(behavior='takeoff', args={
                 'height': 1.0,
                 'speed': 0.5,
@@ -130,7 +145,7 @@ class MissionTransmitter(Node):
                 'wait': True
             }))
             json_msg = missions[n].json()
-            self.mission_pubs[n].publish(String(data=json_msg))
+            self.mission_pubs[n].publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
             print(json_msg)
 
 
