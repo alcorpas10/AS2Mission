@@ -61,10 +61,11 @@ class MissionTransmitter(Node):
         self.mission_id+=1
 
     def event_callback(self, msg : State):
-        print('DRONE LOST')
+        print('DRONE EVENT')
         drone_target = int(msg.identifier.natural)
         if msg.state == State.LOST:
             self.drones_available.remove(drone_target)
+            print(self.drones_available)
             if msg.type == State.LAND:
                 target = self.namespace + str(drone_target)
                 mission = Mission(target=target, verbose=False)
@@ -101,19 +102,20 @@ class MissionTransmitter(Node):
                     json_msg = mission.json()
                     self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
                 self.mission_id+=1
-            if msg.type == State.WP_REPEATED:
-                target = self.namespace + str(drone_target)
-                mission = Mission(target=target, verbose=False)
-                mission.plan.append(MissionItem(behavior='go_to', args={
-                    '_x': msg.position.x, '_y': msg.position.y, '_z': msg.position.z,
-                    'speed': 0.5,
-                    'yaw_mode': YawMode.FIXED_YAW, 'yaw_angle': 0.00,
-                    'wait': True
-                }))
-                json_msg = mission.json()
-                self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.INSERT, mission=json_msg))
+        if msg.state == State.WP_REPEATED:
+            target = self.namespace + str(drone_target)
+            mission = Mission(target=target, verbose=False)
+            mission.plan.append(MissionItem(behavior='go_to', args={
+                '_x': msg.position.x, '_y': msg.position.y, '_z': msg.position.z,
+                'speed': 0.5,
+                'yaw_mode': YawMode.FIXED_YAW, 'yaw_angle': 0.00,
+                'wait': True
+            }))
+            json_msg = mission.json()
+            self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.INSERT, mission=json_msg))
         if msg.state == State.RECOVERED:
             self.drones_available.append(drone_target)
+            print(self.drones_available)
         
 
 

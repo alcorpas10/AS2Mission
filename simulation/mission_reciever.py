@@ -14,7 +14,7 @@ class MissionReciever:
     def __init__(self, drone_id, namespace):
         self.id = drone_id
         self.uav_name = namespace + str(self.id)
-        # self.mission = Mission(target=self.uav_name, verbose=False)
+        self.mission = Mission(target=self.uav_name, verbose=False)
         self.interpreter = MissionInterpreter(mission=self.mission)
         self.landed = True
 

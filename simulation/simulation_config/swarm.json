@@ -4,19 +4,19 @@
         {
             "model": "quadrotor_base",
             "name": "drone_sim_0",
-            "xyz": [0.00, -1.00, 0.2 ],
+            "xyz": [0.00, -2.00, 0.2 ],
             "rpy": [ 0, 0, 0.0 ]
         },
         {
             "model": "quadrotor_base",
             "name": "drone_sim_1",
-            "xyz": [1.00, -1.00, 0.2 ],
+            "xyz": [1.00, -2.00, 0.2 ],
             "rpy": [ 0, 0, 0.0 ]
         },
         {
             "model": "quadrotor_base",
             "name": "drone_sim_2",
-            "xyz": [0.00, -2.00, 0.2 ],
+            "xyz": [2.00, -2.00, 0.2 ],
             "rpy": [ 0, 0, 0.0 ]
         }
     ]
