@@ -12,7 +12,7 @@ class Starter(Node):
         super().__init__("PlanGetter")
 
         self.keep_running = True
-        self.plan_cli = self.create_client(GeneratePlan, '/mutac/generate_plan')
+        self.plan_cli = self.create_client(GeneratePlan, '/planner/generate_plan')
 
         self.__executor = rclpy.executors.SingleThreadedExecutor()
         self.__executor.add_node(self)

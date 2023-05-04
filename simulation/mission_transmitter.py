@@ -32,9 +32,9 @@ class MissionTransmitter(Node):
 
         self.mission_pubs : Dict[int, Publisher] = {}
 
-        self.land_sub = self.create_subscription(Int32, "/emergency_land", self.land_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
-        self.plan_sub = self.create_subscription(Plan, "/mutac/planned_paths", self.path_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
-        self.events_sub = self.create_subscription(State, "/mutac/drone_events", self.event_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
+        self.land_sub = self.create_subscription(Int32, "/planner/signal/emergency_land", self.land_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
+        self.plan_sub = self.create_subscription(Plan, "/planner/planned_paths", self.path_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
+        self.events_sub = self.create_subscription(State, "/planner/notification/drone_events", self.event_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
 
         for i in range(self.n_drones):
             mission_pub_name = str("/" + self.namespace + str(i) + "/mission")

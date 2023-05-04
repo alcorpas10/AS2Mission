@@ -1,7 +1,6 @@
 from as2_python_api.mission_interpreter.mission import Mission
 from as2_python_api.mission_interpreter.mission_interpreter import MissionInterpreter
 
-# from std_msgs.msg import String
 from as2_msgs.msg import MissionUpdate
 
 from rclpy import qos
