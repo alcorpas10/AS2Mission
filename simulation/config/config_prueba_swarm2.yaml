@@ -5,6 +5,7 @@
       trajectory: 0.5
       waypoint: 0.2
     error_limit: 3
+    namespace: "/drone_sim_"
     drone:
       speed: 1.0
       acceleration: 1.0
