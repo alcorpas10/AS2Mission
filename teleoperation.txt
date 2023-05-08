@@ -5,3 +5,4 @@ ros2 launch as2_keyboard_teleoperation as2_keyboard_teleoperation_launch.py name
 
 
 ros2 launch as2_keyboard_teleoperation as2_keyboard_teleoperation_launch.py namespace:=cf0,cf1 use_sim_time:=false
+ros2 launch as2_keyboard_teleoperation as2_keyboard_teleoperation_launch.py namespace:=cf0,cf1,cf2 use_sim_time:=false
