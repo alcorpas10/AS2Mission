@@ -18,10 +18,10 @@ def publish_plan_1(node : Starter):
         Point32(x=-2.0 , y=-2.0, z=0.0)
     ])
     polygon2 = Polygon(points=[
-        Point32(x= 0.0 , y= 2.0, z=0.0),
+        Point32(x= 0.25, y= 2.0, z=0.0),
         Point32(x= 2.0 , y= 2.0, z=0.0),
         Point32(x= 2.0 , y=-1.0, z=0.0),
-        Point32(x= 0.0 , y= 0.0, z=0.0)
+        Point32(x= 0.25, y= 0.0, z=0.0)
     ])
 
     sweeps = [

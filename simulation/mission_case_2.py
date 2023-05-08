@@ -4,7 +4,7 @@ from time import sleep
 import rclpy
 
 import sys
-from mutac_msgs.msg import Generation, Sweep
+from mutac_msgs.msg import Generation, Sweep, Alarm
 from mutac_msgs.srv import GeneratePlan
 from geometry_msgs.msg import Point, Point32, Polygon
 
@@ -18,10 +18,10 @@ def publish_plan_1(node : Starter):
         Point32(x=-2.0 , y=-2.0, z=0.0)
     ])
     polygon2 = Polygon(points=[
-        Point32(x= 0.0 , y= 2.0, z=0.0),
+        Point32(x= 0.25, y= 2.0, z=0.0),
         Point32(x= 2.0 , y= 2.0, z=0.0),
         Point32(x= 2.0 , y=-1.0, z=0.0),
-        Point32(x= 0.0 , y= 0.0, z=0.0)
+        Point32(x= 0.25, y= 0.0, z=0.0)
     ])
 
     sweeps = [
@@ -58,17 +58,42 @@ if __name__ == '__main__':
 
     rclpy.init()
 
+    auto_confirm = False
+    if len(sys.argv) > 1:
+        if str(sys.argv[1]) == "-y":
+            auto_confirm = True
+
     controller = Starter()
 
     controller.get_logger().info("Publish Plan")
-    if confirm("Publish Plan"):
+    if not auto_confirm:
+        if confirm("Publish Plan"):
+            controller.get_logger().info("Publishing...")
+            publish_plan_1(controller)
+    else:
         controller.get_logger().info("Publishing...")
         publish_plan_1(controller)
 
+    sleep(24.5)
+
+    print('LAND DRONE 1')
+    controller.pub_land(1)
+
+    sleep(25.0)
+
+    print('REPEAT DRONE 0')
+    controller.pub_repeat(0, Alarm.PHOTO_ERROR)
+
+    sleep(10.0)
+
+    print('REPEAT DRONE 2')
+    controller.pub_repeat(2, Alarm.PHOTO_ERROR)
+
     sleep(2.0)
 
-    if confirm("End"):
-        pass
+    if not auto_confirm:
+        if confirm("End"):
+            pass
 
     controller.shutdown()
 
