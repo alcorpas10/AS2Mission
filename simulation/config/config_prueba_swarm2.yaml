@@ -4,6 +4,8 @@
     distance:
       trajectory: 0.5
       waypoint: 0.2
+      homebase: 0.2
+    max_time_stopped: 15.0
     error_limit: 3
     namespace: "/drone_sim_"
     drone:
