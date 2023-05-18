@@ -148,7 +148,7 @@ class MissionTransmitter(Node):
             }))
             json_msg = missions[n].json()
             self.mission_pubs[n].publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-            print(json_msg)
+            # print(json_msg)
 
 
     def spin_node(self):
