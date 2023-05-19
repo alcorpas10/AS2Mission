@@ -64,7 +64,8 @@ class MissionTransmitter(Node):
         print('DRONE EVENT')
         drone_target = int(msg.identifier.natural)
         if msg.state == State.LOST:
-            self.drones_available.remove(drone_target)
+            if drone_target in self.drones_available:
+                self.drones_available.remove(drone_target)
             print(self.drones_available)
             if msg.type == State.LAND:
                 target = self.namespace + str(drone_target)
@@ -148,7 +149,7 @@ class MissionTransmitter(Node):
             }))
             json_msg = missions[n].json()
             self.mission_pubs[n].publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-            print(json_msg)
+            # print(json_msg)
 
 
     def spin_node(self):

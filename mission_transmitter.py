@@ -64,7 +64,8 @@ class MissionTransmitter(Node):
         print('DRONE EVENT')
         drone_target = int(msg.identifier.natural)
         if msg.state == State.LOST:
-            self.drones_available.remove(drone_target)
+            if drone_target in self.drones_available:
+                self.drones_available.remove(drone_target)
             print(self.drones_available)
             if msg.type == State.LAND:
                 target = self.namespace + str(drone_target)
