@@ -79,12 +79,12 @@ if __name__ == '__main__':
     print('LAND DRONE 1')
     controller.pub_land(1)
 
-    sleep(25.0)
+    sleep(25.5)
 
     print('REPEAT DRONE 0')
     controller.pub_repeat(0, Alarm.PHOTO_ERROR)
 
-    sleep(10.0)
+    sleep(13.0)
 
     print('REPEAT DRONE 2')
     controller.pub_repeat(2, Alarm.PHOTO_ERROR)

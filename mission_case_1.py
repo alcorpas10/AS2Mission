@@ -12,16 +12,16 @@ from starter import Starter
 
 def publish_plan_1(node : Starter):
     polygon1 = Polygon(points=[
-        Point32(x=-2.0 , y= 2.0, z=0.0),
-        Point32(x=-0.5 , y= 1.0, z=0.0),
-        Point32(x=-0.5 , y=-2.0, z=0.0),
-        Point32(x=-2.0 , y=-2.0, z=0.0)
+        Point32(x=-3.0 , y= 3.0, z=0.0),
+        Point32(x=-1.5 , y= 2.0, z=0.0),
+        Point32(x=-1.5 , y=-1.0, z=0.0),
+        Point32(x=-3.0 , y=-1.0, z=0.0)
     ])
     polygon2 = Polygon(points=[
-        Point32(x= 0.25, y= 2.0, z=0.0),
-        Point32(x= 2.0 , y= 2.0, z=0.0),
-        Point32(x= 2.0 , y=-1.0, z=0.0),
-        Point32(x= 0.25, y= 0.0, z=0.0)
+        Point32(x=-0.75, y= 3.0, z=0.0),
+        Point32(x= 1.0 , y= 3.0, z=0.0),
+        Point32(x= 1.0 , y= 0.0, z=0.0),
+        Point32(x=-0.75, y= 1.0, z=0.0)
     ])
 
     sweeps = [
