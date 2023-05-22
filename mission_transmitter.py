@@ -30,15 +30,11 @@ class MissionTransmitter(Node):
 
         self.drones_available = list(i for i in range(n_drones))
 
-        self.mission_pubs : Dict[int, Publisher] = {}
-
         self.land_sub = self.create_subscription(Int32, "/planner/signal/emergency_land", self.land_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
         self.plan_sub = self.create_subscription(Plan, "/planner/planned_paths", self.path_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
         self.events_sub = self.create_subscription(State, "/planner/notification/drone_events", self.event_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
 
-        for i in range(self.n_drones):
-            mission_pub_name = str("/" + self.namespace + str(i) + "/mission")
-            self.mission_pubs[i] = self.create_publisher(MissionUpdate, mission_pub_name, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
+        self.mission_pub = self.create_publisher(MissionUpdate, "/mission_update", qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
         
         self.__executor = rclpy.executors.SingleThreadedExecutor()
         self.__executor.add_node(self)
@@ -57,7 +53,7 @@ class MissionTransmitter(Node):
             'wait': True
         }))
         json_msg = mission.json()
-        self.mission_pubs[msg.data].publish(MissionUpdate(drone_id=msg.data, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+        self.mission_pub.publish(MissionUpdate(drone_id=msg.data, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
         self.mission_id+=1
 
     def event_callback(self, msg : State):
@@ -75,13 +71,13 @@ class MissionTransmitter(Node):
                     'wait': True
                 }))
                 json_msg = mission.json()
-                self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                for d in self.drones_available:
-                    target = self.namespace + str(d)
-                    mission = Mission(target=target, verbose=False)
-                    json_msg = mission.json()
-                    self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                self.mission_id+=1
+                self.mission_pub.publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+                # for d in self.drones_available:
+                #     target = self.namespace + str(d)
+                #     mission = Mission(target=target, verbose=False)
+                #     json_msg = mission.json()
+                #     self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+                # self.mission_id+=1
             if msg.type == State.HOMEBASE:
                 target = self.namespace + str(drone_target)
                 mission = Mission(target=target, verbose=False)
@@ -96,13 +92,13 @@ class MissionTransmitter(Node):
                     'wait': True
                 }))
                 json_msg = mission.json()
-                self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                for d in self.drones_available:
-                    target = self.namespace + str(d)
-                    mission = Mission(target=target, verbose=False)
-                    json_msg = mission.json()
-                    self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                self.mission_id+=1
+                self.mission_pub.publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+            for d in self.drones_available:
+                target = self.namespace + str(d)
+                mission = Mission(target=target, verbose=False)
+                json_msg = mission.json()
+                self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+            self.mission_id+=1
         if msg.state == State.WP_REPEATED:
             target = self.namespace + str(drone_target)
             mission = Mission(target=target, verbose=False)
@@ -113,14 +109,11 @@ class MissionTransmitter(Node):
                 'wait': True
             }))
             json_msg = mission.json()
-            self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.INSERT, mission=json_msg))
+            self.mission_pub.publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.INSERT, mission=json_msg))
         if msg.state == State.RECOVERED:
             self.drones_available.append(drone_target)
             print(self.drones_available)
         
-
-
-
 
     def path_callback(self, msg : Plan):
         self.get_logger().info("Got plan")
@@ -148,7 +141,7 @@ class MissionTransmitter(Node):
                 'wait': True
             }))
             json_msg = missions[n].json()
-            self.mission_pubs[n].publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+            self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
             # print(json_msg)
 
 
