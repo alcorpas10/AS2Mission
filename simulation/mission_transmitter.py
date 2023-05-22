@@ -76,12 +76,12 @@ class MissionTransmitter(Node):
                 }))
                 json_msg = mission.json()
                 self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                for d in self.drones_available:
-                    target = self.namespace + str(d)
-                    mission = Mission(target=target, verbose=False)
-                    json_msg = mission.json()
-                    self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                self.mission_id+=1
+                # for d in self.drones_available:
+                #     target = self.namespace + str(d)
+                #     mission = Mission(target=target, verbose=False)
+                #     json_msg = mission.json()
+                #     self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+                # self.mission_id+=1
             if msg.type == State.HOMEBASE:
                 target = self.namespace + str(drone_target)
                 mission = Mission(target=target, verbose=False)
@@ -97,12 +97,12 @@ class MissionTransmitter(Node):
                 }))
                 json_msg = mission.json()
                 self.mission_pubs[drone_target].publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                for d in self.drones_available:
-                    target = self.namespace + str(d)
-                    mission = Mission(target=target, verbose=False)
-                    json_msg = mission.json()
-                    self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                self.mission_id+=1
+            for d in self.drones_available:
+                target = self.namespace + str(d)
+                mission = Mission(target=target, verbose=False)
+                json_msg = mission.json()
+                self.mission_pubs[d].publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+            self.mission_id+=1
         if msg.state == State.WP_REPEATED:
             target = self.namespace + str(drone_target)
             mission = Mission(target=target, verbose=False)
