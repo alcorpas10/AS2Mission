@@ -1,0 +1,27 @@
+/**:
+  ros__parameters:
+    n_drones: 4
+    distance:
+      trajectory: 0.5
+      waypoint: 0.2
+      homebase: 0.2
+    max_time_stopped: 15.0
+    error_limit: 3
+    namespace: "/drone_sim_"
+    drone:
+      speed: 1.0
+      acceleration: 1.0
+    homebase:
+      drone1: [ 0.00,-2.00, 1.00]
+      drone2: [ 1.00,-2.00, 1.00]
+      drone3: [ 2.00,-2.00, 1.00]
+      drone4: [ -1.00,-2.00, 1.00]
+    mission:
+      height: 2.0
+      distance: 0.75
+    common_space:
+      height: 3.0
+      height_increment: 0.5
+    update_plan:
+      threshold: 0.8
+    battery_per_minute: 5.0

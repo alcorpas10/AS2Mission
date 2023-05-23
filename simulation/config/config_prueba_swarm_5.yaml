@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    n_drones: 3
+    n_drones: 5
     distance:
       trajectory: 0.5
       waypoint: 0.2
@@ -15,6 +15,8 @@
       drone1: [ 0.00,-2.00, 1.00]
       drone2: [ 1.00,-2.00, 1.00]
       drone3: [ 2.00,-2.00, 1.00]
+      drone4: [-1.00,-2.00, 1.00]
+      drone4: [-2.00,-2.00, 1.00]
     mission:
       height: 2.0
       distance: 0.75
