@@ -10,8 +10,9 @@ import rclpy
 import sys
 
 class MissionReciever:
-    def __init__(self, drone_id):
+    def __init__(self, drone_id, namespace):
         self.id = drone_id
+        self.uav_name = namespace + str(self.id)
         self.mission = Mission(target=self.uav_name, verbose=False)
         self.interpreter = MissionInterpreter(mission=self.mission)
         self.landed = True
@@ -57,10 +58,11 @@ class MissionReciever:
 if __name__ == '__main__':
     rclpy.init()
 
-    if(len(sys.argv) < 2):
-        print("Usage: python3 mission_reciever.py id")
+    if(len(sys.argv) < 3):
+        print("Usage: python3 mission_reciever.py id namespace")
         exit(-1)
 
     id = int(sys.argv[1])
+    uav_namespace = str(sys.argv[2])
 
-    MissionReciever(id)
+    MissionReciever(id, uav_namespace)

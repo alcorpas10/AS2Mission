@@ -23,10 +23,10 @@ tmux new-window -t $SESSION:6 -n 'Mission Transmitter 0'
 tmux send-keys "python3 mission_transmitter.py 3 cf" C-m
 
 tmux new-window -t $SESSION:7 -n 'Mission Reciever 0'
-tmux send-keys "python3 mission_reciever.py 0" C-m
+tmux send-keys "python3 mission_reciever.py 0 cf" C-m
 
 tmux new-window -t $SESSION:8 -n 'Mission Reciever 1'
-tmux send-keys "python3 mission_reciever.py 1" C-m
+tmux send-keys "python3 mission_reciever.py 1 cf" C-m
 
 tmux new-window -t $SESSION:9 -n 'Mission Reciever 2'
-tmux send-keys "python3 mission_reciever.py 2" C-m
+tmux send-keys "python3 mission_reciever.py 2 cf" C-m
