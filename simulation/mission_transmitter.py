@@ -128,11 +128,7 @@ class MissionTransmitter(Node):
         self.get_logger().info("Got plan")
         if self.timer_path is not None:
             self.timer_path.cancel()
-            for d in self.drones_available:
-                target = self.namespace + str(d)
-                mission = Mission(target=target, verbose=False)
-                json_msg = mission.json()
-                self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.RESUME, mission=json_msg))
+            self.timer_path = None
         missions : List[Mission] = list()
         for d in range(n_drones):
             target = self.namespace + str(d)
