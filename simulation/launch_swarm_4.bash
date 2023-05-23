@@ -1,7 +1,7 @@
 #!/bin/bash
 
-drone_namespaces=('drone_sim_0' 'drone_sim_1' 'drone_sim_2')
-simulation_config="simulation_config/swarm.json"
+drone_namespaces=('drone_sim_0' 'drone_sim_1' 'drone_sim_2' 'drone_sim_3')
+simulation_config="simulation_config/swarm4.json"
 
 # For each drone namespace
 for drone_namespace in "${drone_namespaces[@]}"
