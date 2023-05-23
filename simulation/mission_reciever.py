@@ -39,6 +39,14 @@ class MissionReciever:
                 self.insert_mission(Mission.parse_raw(msg.mission))
                 self.interpreter.drone.get_logger().info("Mission inserted")
 
+            if msg.type == MissionUpdate.PAUSE:
+                self.pause_mission()
+                self.interpreter.drone.get_logger().info("Mission paused")
+
+            if msg.type == MissionUpdate.RESUME:
+                self.resume_mission()
+                self.interpreter.drone.get_logger().info("Mission resumed")
+
 
     def execute_mission(self, mission : Mission):
         self.interpreter.reset(mission)
@@ -54,6 +62,12 @@ class MissionReciever:
 
     def insert_mission(self, mission : Mission):
         self.interpreter.insert_mission(mission)
+
+    def pause_mission(self):
+        self.interpreter.pause_mission()
+
+    def resume_mission(self):
+        self.interpreter.resume_mission()
 
 if __name__ == '__main__':
     rclpy.init()

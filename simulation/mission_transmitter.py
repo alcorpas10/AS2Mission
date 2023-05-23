@@ -35,6 +35,8 @@ class MissionTransmitter(Node):
         self.events_sub = self.create_subscription(State, "/planner/notification/drone_events", self.event_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
 
         self.mission_pub = self.create_publisher(MissionUpdate, "/mission_update", qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
+
+        self.timer_path = None
         
         self.__executor = rclpy.executors.SingleThreadedExecutor()
         self.__executor.add_node(self)
@@ -72,12 +74,6 @@ class MissionTransmitter(Node):
                 }))
                 json_msg = mission.json()
                 self.mission_pub.publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                # for d in self.drones_available:
-                #     target = self.namespace + str(d)
-                #     mission = Mission(target=target, verbose=False)
-                #     json_msg = mission.json()
-                #     self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
-                # self.mission_id+=1
             if msg.type == State.HOMEBASE:
                 target = self.namespace + str(drone_target)
                 mission = Mission(target=target, verbose=False)
@@ -97,8 +93,12 @@ class MissionTransmitter(Node):
                 target = self.namespace + str(d)
                 mission = Mission(target=target, verbose=False)
                 json_msg = mission.json()
-                self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+                self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.PAUSE, mission=json_msg))
             self.mission_id+=1
+            if self.timer_path is None:
+                self.timer_path = self.create_timer(2, self.timer_callback)
+            else:
+                self.timer_path.reset()
         if msg.state == State.WP_REPEATED:
             target = self.namespace + str(drone_target)
             mission = Mission(target=target, verbose=False)
@@ -113,10 +113,26 @@ class MissionTransmitter(Node):
         if msg.state == State.RECOVERED:
             self.drones_available.append(drone_target)
             print(self.drones_available)
+
+    def timer_callback(self):
+        for d in self.drones_available:
+            target = self.namespace + str(d)
+            mission = Mission(target=target, verbose=False)
+            json_msg = mission.json()
+            self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.RESUME, mission=json_msg))
+        self.timer_path.cancel()
+        self.timer_path = None
         
 
     def path_callback(self, msg : Plan):
         self.get_logger().info("Got plan")
+        if self.timer_path is not None:
+            self.timer_path.cancel()
+            for d in self.drones_available:
+                target = self.namespace + str(d)
+                mission = Mission(target=target, verbose=False)
+                json_msg = mission.json()
+                self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, type=MissionUpdate.RESUME, mission=json_msg))
         missions : List[Mission] = list()
         for d in range(n_drones):
             target = self.namespace + str(d)
