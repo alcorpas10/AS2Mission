@@ -52,6 +52,7 @@ new_window 'behaviors' "ros2 launch as2_behaviors_motion motion_behaviors_launch
     use_sim_time:=$use_sim_time \
     follow_path_plugin_name:=follow_path_plugin_$behavior_type \
     go_to_plugin_name:=go_to_plugin_$behavior_type \
+    go_to_threshold:=0.2 \
     takeoff_plugin_name:=takeoff_plugin_$behavior_type \
     land_plugin_name:=land_plugin_speed"
 
