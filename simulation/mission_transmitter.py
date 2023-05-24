@@ -155,9 +155,9 @@ class MissionTransmitter(Node):
                 'wait': True
             }))
             json_msg = missions[n].json()
+            self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg)) 
             if was_timer:
                self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.RESUME, mission=""))
-            self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg)) 
             # print(json_msg)
 
 
