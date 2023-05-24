@@ -126,9 +126,11 @@ class MissionTransmitter(Node):
 
     def path_callback(self, msg : Plan):
         self.get_logger().info("Got plan")
+        was_timer = False
         if self.timer_path is not None:
             self.timer_path.cancel()
             self.timer_path = None
+            was_timer = True
         missions : List[Mission] = list()
         for d in range(n_drones):
             target = self.namespace + str(d)
@@ -153,7 +155,9 @@ class MissionTransmitter(Node):
                 'wait': True
             }))
             json_msg = missions[n].json()
-            self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg))
+            if was_timer:
+               self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.RESUME, mission=""))
+            self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, type=MissionUpdate.EXECUTE, mission=json_msg)) 
             # print(json_msg)
 
 
