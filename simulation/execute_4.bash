@@ -26,13 +26,13 @@ tmux new-window -t $SESSION:7 -n 'Mission Transmitter 0'
 tmux send-keys "python3 mission_transmitter.py 4 drone_sim_" C-m
 
 tmux new-window -t $SESSION:8 -n 'Mission Reciever 0'
-tmux send-keys "python3 mission_reciever.py 0 drone_sim_" C-m
+tmux send-keys "python3 mission_receiver.py 0 drone_sim_" C-m
 
 tmux new-window -t $SESSION:9 -n 'Mission Reciever 1'
-tmux send-keys "python3 mission_reciever.py 1 drone_sim_" C-m
+tmux send-keys "python3 mission_receiver.py 1 drone_sim_" C-m
 
 tmux new-window -t $SESSION:10 -n 'Mission Reciever 2'
-tmux send-keys "python3 mission_reciever.py 2 drone_sim_" C-m
+tmux send-keys "python3 mission_receiver.py 2 drone_sim_" C-m
 
 tmux new-window -t $SESSION:11 -n 'Mission Reciever 3'
-tmux send-keys "python3 mission_reciever.py 3 drone_sim_" C-m
+tmux send-keys "python3 mission_receiver.py 3 drone_sim_" C-m

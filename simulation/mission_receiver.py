@@ -9,7 +9,7 @@ import rclpy.executors
 import rclpy
 import sys
 
-class MissionReciever:
+class MissionReceiver:
     def __init__(self, drone_id, namespace):
         self.id = drone_id
         self.uav_name = namespace + str(self.id)
