@@ -79,4 +79,4 @@ if __name__ == '__main__':
     id = int(sys.argv[1])
     uav_namespace = str(sys.argv[2])
 
-    MissionReciever(id, uav_namespace)
+    MissionReceiver(id, uav_namespace)
