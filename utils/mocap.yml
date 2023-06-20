@@ -1,0 +1,13 @@
+attach: true
+root: ./
+startup_window: mocap
+windows:
+  - mocap:
+      layout:
+      panes:
+        - ros2 launch mocap_optitrack mocap.launch.py
+            namespace:=optitrack
+            config_file:=real_config/mocap.yaml
+        - sleep 2; ros2 launch as2_external_object_to_tf as2_external_object_to_tf_launch.py
+            namespace:=cf0
+            config_file:=real_config/external_objects.yaml

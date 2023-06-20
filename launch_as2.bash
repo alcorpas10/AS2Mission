@@ -1,94 +1,119 @@
 #!/bin/bash
 
-# Arguments
-drone_namespace=$1
-if [ -z "$drone_namespace" ]; then
-    drone_namespace="cf"
-fi
-run_platform=$2
-if [ -z "$run_platform" ]; then
-    run_platform="false"
-fi
-using_optitrack=$3
-if [ -z "$using_optitrack" ]; then
-    using_optitrack="false"
-fi
+usage() {
+    echo "  options:"
+    echo "      -s: simulated, choices: [true | false]"
+    echo "      -m: multi agent, choices: [number >= 1]"
+    echo "      -e: estimator_type, choices: [ground_truth, raw_odometry, mocap_pose]"
+    echo "      -r: record rosbag"
+    echo "      -t: launch keyboard teleoperation"
+    echo "      -n: drone namespace, default is cf"
+}
 
-behavior_type="position" # "position" or "trajectory"
-launch_bt="false" # "true" or "false"
+# Arg parser
+while getopts "sem:rtn" opt; do
+  case ${opt} in
+    s )
+      simulated="true"
+      ;;
+    m )
+      swarm="${OPTARG}"
+      ;;
+    e )
+      estimator_plugin="${OPTARG}"
+      ;;
+    r )
+      record_rosbag="true"
+      ;;
+    t )
+      launch_keyboard_teleop="true"
+      ;;
+    n )
+      drone_namespace="${OPTARG}"
+      ;;
+    \? )
+      echo "Invalid option: -$OPTARG" >&2
+      usage
+      exit 1
+      ;;
+    : )
+      if [[ ! $OPTARG =~ ^[swrt]$ ]]; then
+        echo "Option -$OPTARG requires an argument" >&2
+        usage
+        exit 1
+      fi
+      ;;
+  esac
+done
 
-source ./utils/launch_tools.bash
+source utils/tools.bash
 
-new_session $drone_namespace
+# Shift optional args
+shift $((OPTIND -1))
 
-new_window 'alphanumeric_viewer' "ros2 run as2_alphanumeric_viewer as2_alphanumeric_viewer_node \
-    --ros-args -r  __ns:=/$drone_namespace"
-
-if [[ "$run_platform" == "true" ]]
-then
-    new_window 'platform' "ros2 launch as2_platform_crazyflie crazyflie_swarm_launch.py \
-        drone_id:=$drone_namespace \
-        external_odom_topic:=self_localization/pose \
-        external_odom:=$using_optitrack \
-        estimator_type:=2 \
-        controller_type:=1 \
-        swarm_config_file:=config/crazy_swarm.yaml"
-
-    if [[ "$using_optitrack" == "true" ]]
-    then
-        new_window 'mocap' "ros2 launch mocap_optitrack mocap.launch.py  \
-        namespace:=optitrack \
-        config_file:=config/mocap.yaml"
-    fi
-fi
-
-new_window 'controller' "ros2 launch as2_motion_controller controller_launch.py \
-    namespace:=$drone_namespace \
-    use_sim_time:=false \
-    cmd_freq:=100.0 \
-    info_freq:=10.0 \
-    use_bypass:=false \
-    plugin_name:=pid_speed_controller \
-    plugin_config_file:=drone_config/controller.yaml"
-
-if [[ "$using_optitrack" == "true" ]]
-then
-    new_window 'state_estimator' "ros2 launch as2_state_estimator state_estimator_launch.py \
-        namespace:=$drone_namespace \
-        plugin_name:=mocap_pose"
-else
-    new_window 'state_estimator' "ros2 launch as2_state_estimator state_estimator_launch.py \
-        namespace:=$drone_namespace \
-        plugin_name:=external_odom"
+## DEFAULTS
+simulated=${simulated:="false"}  # default ign_gz
+if [[ ${simulated} == "false" && -z ${estimator_plugin} ]]; then
+  echo "Error: when -s is false, -e argument must be set" 1>&2
+  usage
+  exit 1
 fi
 
-new_window 'behaviors' "ros2 launch as2_behaviors_motion motion_behaviors_launch.py \
-    namespace:=$drone_namespace \
-    follow_path_plugin_name:=follow_path_plugin_trajectory \
-    go_to_plugin_name:=go_to_plugin_$behavior_type \
-    takeoff_plugin_name:=takeoff_plugin_$behavior_type \
-    land_plugin_name:=land_plugin_speed \
-    follow_path_threshold:=0.3 \
-    land_speed_condition_height:=0.2 \
-    land_speed_condition_percentage:=0.4"
+swarm=${swarm:=1}
+estimator_plugin=${estimator_plugin:="ground_truth"}  # default ign_gz
+record_rosbag=${record_rosbag:="false"}
+launch_keyboard_teleop=${launch_keyboard_teleop:="false"}
+drone_namespace=${drone_namespace:="cf"}
 
-new_window 'traj_generator' "ros2 launch as2_behaviors_trajectory_generation generate_polynomial_trajectory_behavior_launch.py  \
-        namespace:=$drone_namespace"
-
-# if [[ "$behavior_type" == "trajectory" ]]
-# then
-#     new_window 'traj_generator' "ros2 launch as2_behaviors_trajectory_generator dynamic_polynomial_generator_launch.py  \
-#         namespace:=$drone_namespace"
+# if [[ ${swarm} != 1 ]]; then
+#   num_drones=${swarm}
+#   simulation_config="sim_config/world_swarm.json"
+# else
+#   num_drones=1
+#   simulation_config="sim_config/world.json"
 # fi
+num_drones=$((${swarm}))
+simulation_config="sim_config/swarm${num_drones}.json"
 
-if [[ "$launch_bt" == "true" ]] 
-then
-    new_window 'mission_planner' "ros2 launch as2_behavior_tree behaviour_trees.launch.py \
-    drone_id:=$drone_namespace \
-    groot_logger:=true \
-    tree:=trees/go.xml"
+echo "Num drones: ${num_drones}"
 
-    new_window 'groot' "$AEROSTACK2_WORKSPACE/build/groot/Groot --mode monitor"
+# Generate the list of drone namespaces
+drone_ns=()
+for ((i=0; i<${num_drones}; i++)); do
+  drone_ns+=("$drone_namespace$i")
+done
+
+for ns in "${drone_ns[@]}"
+do
+  if [[ ${ns} == ${drone_ns[0]} ]]; then
+    base_launch="true"
+  else
+    base_launch="false"
+  fi 
+
+  tmuxinator start -n ${ns} -p utils/session.yml drone_namespace=${ns} base_launch=${base_launch}  estimator_plugin=${estimator_plugin} simulation=${simulated} simulation_config=${simulation_config} &
+  wait
+done
+
+if [[ ${estimator_plugin} == "mocap_pose" ]]; then
+  tmuxinator start -n mocap -p utils/mocap.yml &
+  wait
 fi
 
-# echo -e "Launched drone $drone_namespace. For attaching to the session, run: \n  \t $ tmux a -t $drone_namespace"
+if [[ ${record_rosbag} == "true" ]]; then
+  tmuxinator start -n rosbag -p utils/rosbag.yml drone_namespace=$(list_to_string "${drone_ns[@]}") &
+  wait
+fi
+
+if [[ ${launch_keyboard_teleop} == "true" ]]; then
+  tmuxinator start -n keyboard_teleop -p utils/keyboard_teleop.yml simulation=true drone_namespace=$(list_to_string "${drone_ns[@]}") &
+  wait
+fi
+
+if [[ ${simulated} == "true" ]]; then
+  tmuxinator start -n gazebo -p utils/gazebo.yml simulation_config=${simulation_config} &
+  wait
+fi
+
+# Attach to tmux session ${drone_ns[@]}, window 0
+tmux attach-session -t ${drone_ns[0]}:mission

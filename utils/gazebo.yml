@@ -1,0 +1,24 @@
+# ~/.tmuxinator/project_crazyflie_basic.yml
+
+<%
+# Input parameters
+simulation_config = @settings["simulation_config"]
+
+# Other parameters
+use_sim_time      = true
+%>
+
+attach: true
+root: ./
+startup_window: gazebo
+on_project_exit: pkill -9 -f "gazebo"
+windows:
+  - gazebo:
+      layout:
+      panes:
+        - ros2 launch as2_ign_gazebo_assets launch_simulation.py
+          use_sim_time:=<%= use_sim_time %>
+          simulation_config_file:=<%= simulation_config %>
+        - sleep 5; ros2 launch as2_external_object_to_tf as2_external_object_to_tf_launch.py
+            namespace:=cf0
+            config_file:=sim_config/external_objects.yaml

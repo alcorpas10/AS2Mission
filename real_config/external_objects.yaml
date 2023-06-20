@@ -1,0 +1,9 @@
+---
+objects:
+- type: pose
+  frame: gate_0
+  pose_topic: "/gate_0/ground_truth/pose"
+- type: pose
+  frame: gate_1
+  pose_topic: "/gate_1/ground_truth/pose"
+  

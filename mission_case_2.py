@@ -12,16 +12,16 @@ from starter import Starter
 
 def publish_plan_1(node : Starter):
     polygon1 = Polygon(points=[
-        Point32(x=-3.0 , y= 3.0, z=0.0),
-        Point32(x=-1.5 , y= 2.0, z=0.0),
-        Point32(x=-1.5 , y=-1.0, z=0.0),
-        Point32(x=-3.0 , y=-1.0, z=0.0)
+        Point32(x=-2.0 , y= 2.0, z=0.0),
+        Point32(x=-0.5 , y= 1.0, z=0.0),
+        Point32(x=-0.5 , y=-2.0, z=0.0),
+        Point32(x=-2.0 , y=-2.0, z=0.0)
     ])
     polygon2 = Polygon(points=[
-        Point32(x=-0.75, y= 3.0, z=0.0),
-        Point32(x= 1.0 , y= 3.0, z=0.0),
-        Point32(x= 1.0 , y= 0.0, z=0.0),
-        Point32(x=-0.75, y= 1.0, z=0.0)
+        Point32(x= 0.25, y= 2.0, z=0.0),
+        Point32(x= 2.0 , y= 2.0, z=0.0),
+        Point32(x= 2.0 , y=-1.0, z=0.0),
+        Point32(x= 0.25, y= 0.0, z=0.0)
     ])
 
     sweeps = [
@@ -79,12 +79,12 @@ if __name__ == '__main__':
     print('LAND DRONE 1')
     controller.pub_land(1)
 
-    sleep(25.5)
+    sleep(25.0)
 
     print('REPEAT DRONE 0')
     controller.pub_repeat(0, Alarm.PHOTO_ERROR)
 
-    sleep(13.0)
+    sleep(10.0)
 
     print('REPEAT DRONE 2')
     controller.pub_repeat(2, Alarm.PHOTO_ERROR)

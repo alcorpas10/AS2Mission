@@ -1,0 +1,12 @@
+{
+    "world_name": "empty",
+    "drones": [
+        {
+            "model_type": "quadrotor_base",
+            "model_name": "cf0",
+            "xyz": [0.00, -2.00, 0.2 ],
+            "rpy": [ 0, 0, 0.0 ],
+            "flight_time": 60
+        }
+    ]
+}

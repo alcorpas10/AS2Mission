@@ -1,1 +1,0 @@
-ros2 launch as2_keyboard_teleoperation as2_keyboard_teleoperation_launch.py namespace:=drone_sim_0,drone_sim_1,drone_sim_2 use_sim_time:=true
