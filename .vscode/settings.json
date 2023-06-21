@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "~/ros2_ws/install/local/lib/python3.10/dist-packages",
+        "./code"
+    ]
+}

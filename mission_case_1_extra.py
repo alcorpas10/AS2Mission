@@ -8,6 +8,8 @@ from mutac_msgs.msg import Generation, Sweep
 from mutac_msgs.srv import GeneratePlan
 from geometry_msgs.msg import Point, Point32, Polygon
 
+sys.path.insert(1, 'code')
+
 from starter import Starter
 
 def publish_plan_1(node : Starter):

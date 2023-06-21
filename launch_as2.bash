@@ -8,10 +8,11 @@ usage() {
     echo "      -r: record rosbag"
     echo "      -t: launch keyboard teleoperation"
     echo "      -n: drone namespace, default is cf"
+    echo "      -o: open extra nodes, yml file"
 }
 
 # Arg parser
-while getopts "sem:rtn" opt; do
+while getopts "sm:e:rtn:o:" opt; do
   case ${opt} in
     s )
       simulated="true"
@@ -30,6 +31,9 @@ while getopts "sem:rtn" opt; do
       ;;
     n )
       drone_namespace="${OPTARG}"
+      ;;
+    o )
+      open_yml="${OPTARG}"
       ;;
     \? )
       echo "Invalid option: -$OPTARG" >&2
@@ -75,6 +79,10 @@ drone_namespace=${drone_namespace:="cf"}
 num_drones=$((${swarm}))
 simulation_config="sim_config/swarm${num_drones}.json"
 
+echo "open_yml = ${open_yml}"
+
+open_yml=${open_yml:=""}
+
 echo "Num drones: ${num_drones}"
 
 # Generate the list of drone namespaces
@@ -112,6 +120,15 @@ fi
 
 if [[ ${simulated} == "true" ]]; then
   tmuxinator start -n gazebo -p utils/gazebo.yml simulation_config=${simulation_config} &
+  wait
+fi
+
+echo "open_yml = ${open_yml}"
+
+if [[ ${open_yml} != "" ]]; then
+  open_yml=utils/${open_yml}.yml
+  echo "Opening ${open_yml}"
+  tmuxinator start -n mission -p ${open_yml} n_drones=${num_drones} &
   wait
 fi
 
