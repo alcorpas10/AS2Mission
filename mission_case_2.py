@@ -29,11 +29,11 @@ def publish_plan_1(node : Starter):
     sweeps = [
         Sweep(
             polygon=polygon1,
-            orientation=Point(x=0.0, y=-0.5, z=0.0)
+            orientation=Point(x=0.0, y=-0.3, z=0.0)
         ),
         Sweep(
             polygon=polygon2,
-            orientation=Point(x=0.0, y=-0.5, z=0.0)
+            orientation=Point(x=0.0, y=-0.3, z=0.0)
         )
     ]
 

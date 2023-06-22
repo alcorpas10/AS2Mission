@@ -1,0 +1,8 @@
+attach: false
+root: ./
+startup_window: mission
+windows:
+  - mission:
+        layout:
+        panes:
+          - echo Run here the mission

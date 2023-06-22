@@ -19,7 +19,7 @@
       drone5: [ 1.50,-3.00, 1.00]
     mission:
       height: 2.0
-      distance: 0.75
+      distance: 0.5
     common_space:
       height: 3.0
       height_increment: 0.5

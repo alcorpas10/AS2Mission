@@ -9,10 +9,11 @@ usage() {
     echo "      -t: launch keyboard teleoperation"
     echo "      -n: drone namespace, default is cf"
     echo "      -o: open extra nodes, yml file"
+    echo "      -x: dont execute as2 and gazebo"
 }
 
 # Arg parser
-while getopts "sm:e:rtn:o:" opt; do
+while getopts "sm:e:rtn:o:x" opt; do
   case ${opt} in
     s )
       simulated="true"
@@ -34,6 +35,9 @@ while getopts "sm:e:rtn:o:" opt; do
       ;;
     o )
       open_yml="${OPTARG}"
+      ;;
+    x )
+      no_execute="true"
       ;;
     \? )
       echo "Invalid option: -$OPTARG" >&2
@@ -63,6 +67,8 @@ if [[ ${simulated} == "false" && -z ${estimator_plugin} ]]; then
   exit 1
 fi
 
+no_execute=${no_execute:="false"}
+
 swarm=${swarm:=1}
 estimator_plugin=${estimator_plugin:="ground_truth"}  # default ign_gz
 record_rosbag=${record_rosbag:="false"}
@@ -91,21 +97,21 @@ for ((i=0; i<${num_drones}; i++)); do
   drone_ns+=("$drone_namespace$i")
 done
 
-for ns in "${drone_ns[@]}"
-do
-  if [[ ${ns} == ${drone_ns[0]} ]]; then
-    base_launch="true"
-  else
-    base_launch="false"
-  fi 
+if [[ ${no_execute} == "false" ]]; then
+  for ns in "${drone_ns[@]}"; do
+    tmuxinator start -n ${ns} -p utils/session.yml drone_namespace=${ns} base_launch=false estimator_plugin=${estimator_plugin} simulation=${simulated} simulation_config=${simulation_config} &
+    wait
+  done
 
-  tmuxinator start -n ${ns} -p utils/session.yml drone_namespace=${ns} base_launch=${base_launch}  estimator_plugin=${estimator_plugin} simulation=${simulated} simulation_config=${simulation_config} &
-  wait
-done
+  if [[ ${estimator_plugin} == "mocap_pose" ]]; then
+    tmuxinator start -n mocap -p utils/mocap.yml &
+    wait
+  fi
 
-if [[ ${estimator_plugin} == "mocap_pose" ]]; then
-  tmuxinator start -n mocap -p utils/mocap.yml &
-  wait
+  if [[ ${simulated} == "true" ]]; then
+    tmuxinator start -n gazebo -p utils/gazebo.yml simulation_config=${simulation_config} &
+    wait
+  fi
 fi
 
 if [[ ${record_rosbag} == "true" ]]; then
@@ -118,19 +124,16 @@ if [[ ${launch_keyboard_teleop} == "true" ]]; then
   wait
 fi
 
-if [[ ${simulated} == "true" ]]; then
-  tmuxinator start -n gazebo -p utils/gazebo.yml simulation_config=${simulation_config} &
-  wait
-fi
+tmuxinator start -n mission -p utils/empty.yml &
+wait
 
 echo "open_yml = ${open_yml}"
 
 if [[ ${open_yml} != "" ]]; then
   open_yml=utils/${open_yml}.yml
   echo "Opening ${open_yml}"
-  tmuxinator start -n mission -p ${open_yml} n_drones=${num_drones} &
+  tmuxinator start -n open -p ${open_yml} n_drones=${num_drones} &
   wait
 fi
 
-# Attach to tmux session ${drone_ns[@]}, window 0
-tmux attach-session -t ${drone_ns[0]}:mission
+tmux attach-session -t mission:mission
