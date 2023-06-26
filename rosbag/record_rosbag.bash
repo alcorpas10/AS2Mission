@@ -20,11 +20,14 @@ for drone_namespace in "${drone_namespaces[@]}"; do
   rosbag_cmd+=" /${drone_namespace}/platform/info \
                 /${drone_namespace}/self_localization/pose \
                 /${drone_namespace}/self_localization/twist \
-                /${drone_namespace}/actuator_command/twist"
+                /${drone_namespace}/actuator_command/twist \
+                /planner/visualization/${drone_namespace}/path_left \
+                /planner/visualization/${drone_namespace}/covered_path"
 done
 
 # Add remaining topics
-rosbag_cmd+=" /tf /tf_static --include-hidden-topics"
+# rosbag_cmd+=" /tf /tf_static --include-hidden-topics"
+rosbag_cmd+=" --include-hidden-topics"
 
 # Execute the rosbag record command
 eval "$rosbag_cmd"
