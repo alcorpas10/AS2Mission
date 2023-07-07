@@ -97,7 +97,16 @@ for ((i=0; i<${num_drones}; i++)); do
   drone_ns+=("$drone_namespace$i")
 done
 
+tmuxinator start -n mission -p utils/empty.yml &
+wait
+
 if [[ ${no_execute} == "false" ]]; then
+  if [[ ${simulated} == "true" ]]; then
+    echo ${simulation_config}
+    tmuxinator start -n gazebo -p utils/gazebo.yml simulation_config=${simulation_config} &
+    wait
+  fi
+  
   for ns in "${drone_ns[@]}"; do
     tmuxinator start -n ${ns} -p utils/session.yml drone_namespace=${ns} base_launch=false estimator_plugin=${estimator_plugin} simulation=${simulated} simulation_config=${simulation_config} &
     wait
@@ -108,10 +117,6 @@ if [[ ${no_execute} == "false" ]]; then
     wait
   fi
 
-  if [[ ${simulated} == "true" ]]; then
-    tmuxinator start -n gazebo -p utils/gazebo.yml simulation_config=${simulation_config} &
-    wait
-  fi
 fi
 
 if [[ ${record_rosbag} == "true" ]]; then
@@ -123,9 +128,6 @@ if [[ ${launch_keyboard_teleop} == "true" ]]; then
   tmuxinator start -n keyboard_teleop -p utils/keyboard_teleop.yml simulation=true drone_namespace=$(list_to_string "${drone_ns[@]}") &
   wait
 fi
-
-tmuxinator start -n mission -p utils/empty.yml &
-wait
 
 echo "open_yml = ${open_yml}"
 
