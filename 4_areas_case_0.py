@@ -73,10 +73,8 @@ def confirm(msg: str = 'Continue') -> bool:
     confirmation = input(f"{msg}? (y/n): ")
     if confirmation == "y":
         return True
-    elif confirmation == "n":
-        return False
     else:
-        sys.exit(1)
+        return False
 
 if __name__ == '__main__':
     uavs = list()

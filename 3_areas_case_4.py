@@ -21,11 +21,18 @@ def publish_plan_1(node : Starter):
         Point32(x=-10.0, y= 0.0, z=0.0),
         Point32(x=-10.0, y= 4.0, z=0.0)
     ])
-    polygon4 = Polygon(points=[
-        Point32(x=  2.0, y=-2.0, z=0.0),
-        Point32(x=  8.0, y=-2.0, z=0.0),
-        Point32(x= 10.0, y=-5.0, z=0.0),
-        Point32(x=  4.0, y=-5.0, z=0.0)
+    polygon2 = Polygon(points=[
+        Point32(x=  5.0, y= 5.0, z=0.0),
+        Point32(x= 10.0, y= 5.0, z=0.0),
+        Point32(x= 10.0, y= 1.0, z=0.0),
+        Point32(x=  7.0, y= 1.0, z=0.0),
+        Point32(x=  5.0, y= 3.0, z=0.0)
+    ])
+    polygon3 = Polygon(points=[
+        Point32(x= -8.0, y=-1.0, z=0.0),
+        Point32(x= -3.0, y=-1.0, z=0.0),
+        Point32(x= -3.0, y=-5.0, z=0.0),
+        Point32(x=-10.0, y=-5.0, z=0.0)
     ])
 
     sweeps = [
@@ -34,7 +41,11 @@ def publish_plan_1(node : Starter):
             orientation=Point(x=0.0, y=-0.3, z=0.0)
         ),
         Sweep(
-            polygon=polygon4,
+            polygon=polygon2,
+            orientation=Point(x=0.0, y=-0.3, z=0.0)
+        ),
+        Sweep(
+            polygon=polygon3,
             orientation=Point(x=0.0, y=-0.3, z=0.0)
         )
     ]
@@ -75,6 +86,26 @@ if __name__ == '__main__':
     else:
         controller.get_logger().info("Publishing...")
         publish_plan_1(controller)
+
+    sleep(30)
+
+    print('LAND DRONE 0')
+    controller.pub_land(0)
+
+    sleep(30)
+
+    print('LAND DRONE 1')
+    controller.pub_land(1)
+
+    sleep(30)
+
+    print('LAND DRONE 2')
+    controller.pub_land(2)
+
+    sleep(30)
+
+    print('LAND DRONE 3')
+    controller.pub_land(3)
 
     sleep(2.0)
 
