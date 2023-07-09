@@ -92,7 +92,7 @@ if __name__ == '__main__':
     print('LAND DRONE 0')
     controller.pub_land(0)
 
-    sleep(30)
+    sleep(60)
 
     print('LAND DRONE 1')
     controller.pub_land(1)
