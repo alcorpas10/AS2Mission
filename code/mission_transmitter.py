@@ -55,7 +55,7 @@ class MissionTransmitter(Node):
             'wait': True
         }))
         json_msg = mission.json()
-        self.mission_pub.publish(MissionUpdate(drone_id=msg.data, mission_id=self.mission_id, action=MissionUpdate.EXECUTE, mission=json_msg))
+        self.mission_pub.publish(MissionUpdate(drone_id=str(msg.data), mission_id=self.mission_id, action=MissionUpdate.EXECUTE, mission=json_msg))
         self.mission_id+=1
 
     def event_callback(self, msg : State):
@@ -73,7 +73,7 @@ class MissionTransmitter(Node):
                     'wait': True
                 }))
                 json_msg = mission.json()
-                self.mission_pub.publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, action=MissionUpdate.EXECUTE, mission=json_msg))
+                self.mission_pub.publish(MissionUpdate(drone_id=str(drone_target), mission_id=self.mission_id, action=MissionUpdate.EXECUTE, mission=json_msg))
             if msg.type == State.HOMEBASE:
                 target = self.namespace + str(drone_target)
                 mission = Mission(target=target, verbose=False)
@@ -88,12 +88,12 @@ class MissionTransmitter(Node):
                     'wait': True
                 }))
                 json_msg = mission.json()
-                self.mission_pub.publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, action=MissionUpdate.EXECUTE, mission=json_msg))
+                self.mission_pub.publish(MissionUpdate(drone_id=str(drone_target), mission_id=self.mission_id, action=MissionUpdate.EXECUTE, mission=json_msg))
             for d in self.drones_available:
                 target = self.namespace + str(d)
                 mission = Mission(target=target, verbose=False)
                 json_msg = mission.json()
-                self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, action=MissionUpdate.PAUSE, mission=json_msg))
+                self.mission_pub.publish(MissionUpdate(drone_id=str(d), mission_id=self.mission_id, action=MissionUpdate.PAUSE, mission=json_msg))
             self.mission_id+=1
             if self.timer_path is None:
                 self.timer_path = self.create_timer(2, self.timer_callback)
@@ -109,7 +109,7 @@ class MissionTransmitter(Node):
                 'wait': True
             }))
             json_msg = mission.json()
-            self.mission_pub.publish(MissionUpdate(drone_id=drone_target, mission_id=self.mission_id, action=MissionUpdate.INSERT, mission=json_msg))
+            self.mission_pub.publish(MissionUpdate(drone_id=str(drone_target), mission_id=self.mission_id, action=MissionUpdate.INSERT, mission=json_msg))
         if msg.state == State.RECOVERED:
             self.drones_available.append(drone_target)
             print(self.drones_available)
@@ -119,7 +119,7 @@ class MissionTransmitter(Node):
             target = self.namespace + str(d)
             mission = Mission(target=target, verbose=False)
             json_msg = mission.json()
-            self.mission_pub.publish(MissionUpdate(drone_id=d, mission_id=self.mission_id, action=MissionUpdate.RESUME, mission=json_msg))
+            self.mission_pub.publish(MissionUpdate(drone_id=str(d), mission_id=self.mission_id, action=MissionUpdate.RESUME, mission=json_msg))
         self.timer_path.cancel()
         self.timer_path = None
         
@@ -155,11 +155,11 @@ class MissionTransmitter(Node):
                 'wait': True
             }))
             json_msg = missions[n].json()
-            self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, action=MissionUpdate.EXECUTE, mission=json_msg)) 
+            self.mission_pub.publish(MissionUpdate(drone_id=str(n), mission_id=self.mission_id, action=MissionUpdate.EXECUTE, mission=json_msg)) 
         sleep(1)
         for p in msg.paths:
             if was_timer:
-               self.mission_pub.publish(MissionUpdate(drone_id=n, mission_id=self.mission_id, action=MissionUpdate.RESUME, mission=""))
+               self.mission_pub.publish(MissionUpdate(drone_id=str(n), mission_id=self.mission_id, action=MissionUpdate.RESUME, mission=""))
             # print(json_msg)
 
 
