@@ -22,28 +22,30 @@ class MissionReceiver:
         self.mission_sub = self.interpreter.drone.create_subscription(MissionUpdate, mission_sub_name, self.mission_callback, qos.QoSProfile(reliability=qos.ReliabilityPolicy.RELIABLE, depth=10))
 
     def mission_callback(self, msg : MissionUpdate):
-        if msg.drone_id == self.id:
-            if msg.type == MissionUpdate.EXECUTE:
+        self.interpreter.drone.get_logger().info("Message received")
+        if msg.drone_id == str(self.id):
+            self.interpreter.drone.get_logger().info("This drone is the target")
+            if msg.action == MissionUpdate.EXECUTE:
                 self.execute_mission(Mission.parse_raw(msg.mission))
                 self.interpreter.drone.get_logger().info("New mission established")
 
-            if msg.type == MissionUpdate.STOP:
+            if msg.action == MissionUpdate.STOP:
                 self.stop_mission()
                 self.interpreter.drone.get_logger().info("Mission stopped")
 
-            if msg.type == MissionUpdate.APPEND:
-                self.append_mission(Mission.parse_raw(msg.mission))
-                self.interpreter.drone.get_logger().info("Mission appended")
+            # if msg.action == MissionUpdate.APPEND:
+            #     self.append_mission(Mission.parse_raw(msg.mission))
+            #     self.interpreter.drone.get_logger().info("Mission appended")
             
-            if msg.type == MissionUpdate.INSERT:
+            if msg.action == MissionUpdate.INSERT:
                 self.insert_mission(Mission.parse_raw(msg.mission))
                 self.interpreter.drone.get_logger().info("Mission inserted")
 
-            if msg.type == MissionUpdate.PAUSE:
+            if msg.action == MissionUpdate.PAUSE:
                 self.pause_mission()
                 self.interpreter.drone.get_logger().info("Mission paused")
 
-            if msg.type == MissionUpdate.RESUME:
+            if msg.action == MissionUpdate.RESUME:
                 self.resume_mission()
                 self.interpreter.drone.get_logger().info("Mission resumed")
 

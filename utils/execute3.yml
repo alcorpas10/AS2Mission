@@ -1,0 +1,33 @@
+<%
+# Input parameters
+n_drones = @settings["n_drones"].to_i
+
+%>
+
+attach: false
+root: ./
+startup_window:
+windows:
+  - Viewer:
+      layout: main-horizontal
+      panes:
+        - ros2 launch viewer viewer.py
+            config_file:=config/config_prueba_swarm_<%= n_drones %>.yaml
+        - rviz2 -d config/rviz2_config.rviz
+  - Planner:
+      layout:
+      panes:
+        - ros2 launch planner planner.py
+            config_file:=config/config_prueba_swarm_<%= n_drones %>.yaml
+  - Replanning Manager:
+      layout:
+      panes:
+        - ros2 launch replanning_manager replanning_manager.py
+  - Monitors:
+      layout: even-vertical
+      panes:
+<% for a in 0...n_drones do %>
+        - ros2 launch monitor execution_monitor.py
+            drone_id:=<%= a %>
+            config_file:=config/config_prueba_swarm_<%= n_drones %>.yaml
+<% end %>
